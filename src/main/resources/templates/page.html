@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+	<title>Monthly wage calculator</title>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous" />
+</head>
+<body>
+<div class="container"><div class="span12">
+	<h1>Monthly wage calculator</h1>
+	<div>
+		<form action="/" method="POST" enctype="multipart/form-data">
+			Choose a shift CSV file (max size 8 MB) to compute wages:
+			<label class="btn btn-default btn-file"><input type="file" name="shiftList" /></label>
+			<input type="submit" value="Send" class="btn btn-default" />
+		</form>
+	</div>
+	
+	<div class="alert alert-danger" th:if="${error != null}" th:text="${error}"></div>
+	
+	<div th:if="${wages != null}">
+		<h2 th:text="'Wages for '+${#temporals.format(wages.month, 'MM/yyyy')}"></h2>
+		<table class="table">
+			<thead>
+				<tr>
+					<th colspan="4"></th>
+					<th th:attr="colspan=${settings.overtimeClasses.size()}">Overtime hours</th>
+				</tr>
+				<tr>
+					<th>Person ID</th>
+					<th>Person Name</th>
+					<th>Total wage</th>
+					<th>Evening hours</th>
+					<th th:each="overtimeClass : ${settings.overtimeClasses}"
+						th:text="${overtimeClass.startHour}+' - '+${overtimeClass.endHour != null ? overtimeClass.endHour : ''}" />
+				</tr>
+			</thead>
+			<tbody>
+				<tr th:each="wage : ${wages.sortedWages}">
+					<td th:text="${wage.person.id}" />
+					<td th:text="${wage.person.name}" />
+					<td th:text="'$'+${#numbers.formatDecimal(wage.wage, 2, 2)}" />
+					<td th:text="${#numbers.formatDecimal(wage.eveningHours, 2, 2)}+' h'" />
+					<td th:each="overtimeClass : ${settings.overtimeClasses}"
+						th:text="${#numbers.formatDecimal(wage.getOvertimeHours(overtimeClass), 2, 2)}+' h'" />
+				</tr>
+			</tbody>
+		</table>
+	</div>
+</div></div>
+</body>
+</html>
